@@ -1,0 +1,73 @@
+<view class="page-container">
+  <view class="base-bg"></view>
+  <!-- 播放时全屏实景背景 -->
+  <image class="play-bg {{bgUrl ? 'active' : ''}}" src="{{bgUrl}}" mode="aspectFill"></image>
+  <!-- 毛玻璃遮罩层 -->
+  <view class="blur-overlay {{bgUrl ? 'active' : ''}}"></view>
+
+  <view class="fixed-header" style="position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding-top: {{menuButtonTop}}px;">
+    <view class="page-title" style="height: {{menuButtonHeight}}px;">声音库</view>
+    <view class="fixed-header-content">
+      <!-- 搜索栏 -->
+      <view class="search-bar">
+        <view class="search-input-wrap">
+          <text class="search-icon">🔍</text>
+          <input 
+            class="search-input" 
+            placeholder="搜索音效..." 
+            placeholder-class="search-placeholder"
+            value="{{searchKey}}"
+            bindinput="onSearchInput"
+            confirm-type="search"
+          />
+          <text wx:if="{{searchKey}}" class="search-clear" bindtap="onClearSearch">✕</text>
+        </view>
+      </view>
+
+      <!-- 分类标签栏 -->
+      <scroll-view class="category-scroll" scroll-x="true" enhanced="true" show-scrollbar="false">
+        <view class="category-list">
+          <view 
+            class="category-tag {{activeCategory === item.id ? 'active' : ''}}" 
+            wx:for="{{categories}}" 
+            wx:key="id"
+            data-id="{{item.id}}"
+            bindtap="onCategoryTap"
+          >
+            <text>{{item.icon}} {{item.name}}</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <view class="container" style="padding-top: {{menuButtonTop + menuButtonHeight + 140}}px;">
+    <!-- 音效网格 -->
+    <scroll-view class="sound-scroll" scroll-y="true">
+      <view class="sound-grid">
+        <view
+          class="sound-card"
+          wx:for="{{currentCategoryItems}}"
+          wx:key="id"
+          data-item="{{item}}"
+          bindtap="onSoundTap"
+        >
+          <view class="sound-cover-wrap">
+            <image wx:if="{{item.coverUrl}}" class="sound-cover" src="{{item.coverUrl}}" mode="aspectFill"></image>
+            <view class="sound-icon" wx:else>{{item.icon}}</view>
+            <view class="sound-name-overlay">{{item.name}}</view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 空搜索结果 -->
+      <view wx:if="{{currentCategoryItems.length === 0}}" class="empty-result">
+        <text class="empty-icon">🔍</text>
+        <text class="empty-text">没有找到匹配的音效</text>
+      </view>
+
+      <!-- 底部占位，防止导航栏遮挡 -->
+      <view class="bottom-placeholder"></view>
+    </scroll-view>
+  </view>
+</view>

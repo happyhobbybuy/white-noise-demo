@@ -1,0 +1,267 @@
+/* 全局样式 */
+page {
+  color: #33383c;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+  font-size: 28rpx;
+  overflow-x: hidden;
+  background: transparent;
+}
+
+/* 动态渐变背景 */
+.base-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: -2;
+  background: linear-gradient(-45deg, #e6f0f7, #d7e9d2, #f6efe4, #dbeaf5);
+  background-size: 400% 400%;
+  animation: gradientFlow 18s ease infinite;
+}
+
+@keyframes gradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* 播放实景背景 */
+.play-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+.play-bg.active {
+  opacity: 1;
+}
+
+/* 毛玻璃遮罩层 */
+.blur-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: -1;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+.blur-overlay.active {
+  opacity: 1;
+}
+
+/* 容器 */
+.container {
+  padding: 0 32rpx;
+  position: relative;
+  padding-bottom: 0;
+}
+
+/* 顶部栏 */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8rpx;
+  padding-bottom: 8rpx;
+}
+
+.icon-group {
+  display: flex;
+  gap: 44rpx;
+}
+
+.icon-img {
+  width: 48rpx;
+  height: 48rpx;
+  opacity: 0.8;
+}
+
+/* 宣传语 */
+.desc-wrap {
+  text-align: center;
+  margin: 16rpx 0 20rpx;
+  line-height: 1;
+}
+
+.main-slogan {
+  font-size: 40rpx;
+  font-weight: 600;
+  color: #2c3840;
+}
+
+/* 场景横滑 */
+.scene-scroll {
+  margin-bottom: 56rpx;
+}
+
+.scene-list {
+  display: flex;
+  gap: 28rpx;
+  padding: 16rpx 0;
+}
+
+.scene-card {
+  flex-shrink: 0;
+  width: 500rpx;
+  height: 350rpx;
+  border-radius: 36rpx;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 6rpx 28rpx rgba(0, 0, 0, 0.15);
+}
+
+.scene-card.active {
+  box-shadow: 0 6rpx 32rpx rgba(104, 158, 132, 0.5);
+  border: 4rpx solid #689e84;
+}
+
+.scene-img {
+  width: 100%;
+  height: 100%;
+}
+
+.scene-mask {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  padding: 32rpx;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.5));
+  color: #fff;
+}
+
+.scene-title {
+  font-size: 34rpx;
+  margin-bottom: 6rpx;
+  font-weight: 500;
+}
+
+.scene-desc {
+  font-size: 24rpx;
+  opacity: 0.9;
+}
+
+/* 播放器面板 */
+.player-wrap {
+  background: #ffffff;
+  border-radius: 48rpx;
+  padding: 72rpx 40rpx;
+  text-align: center;
+  box-shadow: 0 8rpx 28rpx rgba(0, 0, 0, 0.08);
+}
+
+/* 圆形播放按钮 */
+.play-circle {
+  width: 320rpx;
+  height: 320rpx;
+  margin: 0 auto 44rpx;
+  border-radius: 50%;
+  background: #94bfa8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: breathe 4.5s ease-in-out infinite alternate;
+}
+
+@keyframes breathe {
+  0% { transform: scale(0.95); }
+  100% { transform: scale(1.04); }
+}
+
+.play-icon {
+  font-size: 80rpx;
+  color: #fff;
+}
+
+.current-name {
+  font-size: 28rpx;
+  color: #444;
+  margin-bottom: 48rpx;
+}
+
+/* 音量滑块 */
+.vol-box {
+  text-align: left;
+  margin-bottom: 52rpx;
+  padding: 0 16rpx;
+}
+
+.vol-label {
+  font-size: 26rpx;
+  color: #444;
+  margin-bottom: 16rpx;
+}
+
+/* 混音列表 */
+.mix-list {
+  text-align: left;
+  margin-bottom: 56rpx;
+  min-height: 84rpx;
+}
+
+.mix-empty-tip {
+  text-align: center;
+  color: #666;
+  font-size: 26rpx;
+  padding: 20rpx 0;
+}
+
+.mix-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 0;
+  border-bottom: 2rpx solid rgba(0, 0, 0, 0.08);
+}
+
+.mix-name {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  font-size: 28rpx;
+}
+
+.mix-slider {
+  width: 180rpx;
+}
+
+/* 功能行 */
+.func-row {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 56rpx;
+}
+
+.func-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+  font-size: 24rpx;
+  color: #444;
+}
+
+.func-icon {
+  font-size: 44rpx;
+}
+
+.func-item.active {
+  color: #689e84;
+}
+
+/* 底部tabbar占位 */
+.tab-bar-placeholder {
+  height: 174rpx;
+}
