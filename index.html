@@ -22,20 +22,19 @@ html, body {
   position: relative;
   width: 100%;
   max-width: 375px;
-  height: 100vh;
   margin: 0 auto;
   overflow: hidden;
-  overflow-y: auto;
   background: transparent;
   box-shadow: 0 0 40px rgba(0,0,0,0.5);
 }
 
 /* 动态渐变背景 */
 .base-bg {
-  position: absolute; top: 0; left: 0;
-  width: 100%; height: 100%;
+  position: fixed; top: 0;
+  left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 375px; height: 100vh;
   z-index: 0;
-  background: linear-gradient(-45deg, #e6f0f7, #d7e9d2, #f6efe4, #dbeaf5);
+  background: linear-gradient(-45deg, #2a3a4a, #3a4a3a, #4a3a2a, #2a3a4a);
   background-size: 400% 400%;
   animation: gradientFlow 18s ease infinite;
 }
@@ -47,36 +46,28 @@ html, body {
 
 /* 播放实景背景（模糊） */
 .play-bg {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+  position: fixed;
+  top: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 375px; height: 100vh;
   z-index: 0;
   opacity: 0; transition: opacity 1.2s ease;
   background-size: cover; background-position: center;
   background-repeat: no-repeat;
-  filter: blur(8px) brightness(0.92);
-  overflow: hidden;
+  filter: blur(8px) brightness(0.7);
+  pointer-events: none;
 }
 .play-bg.active { opacity: 1; }
 
-/* 毛玻璃遮罩层（轻微提亮） */
-.blur-overlay {
-  position: absolute; top: 0; left: 0;
-  width: 100%; height: 100%; z-index: 0;
-  background: rgba(255, 255, 255, 0.12);
-  opacity: 0; transition: opacity 1.2s ease;
-}
-.blur-overlay.active { opacity: 1; }
-
 /* 页面容器 */
-.page { display: none; position: relative; min-height: 100vh; overflow-x: hidden; z-index: 1; }
+.page { display: none; position: relative; height: 100vh; overflow-y: auto; overflow-x: hidden; z-index: 1; -ms-overflow-style: none; scrollbar-width: none; }
+.page::-webkit-scrollbar { display: none; }
 .page.active { display: block; }
 .container { padding: 0 16px; position: relative; }
 
 /* 手机端适配：小屏直接全屏 */
 @media screen and (max-width: 375px) {
   .phone-frame { max-width: 100%; box-shadow: none; }
-  .base-bg, .play-bg, .blur-overlay, .fixed-header,
+  .base-bg, .play-bg, .fixed-header,
   .tab-bar-wrap, .modal-mask, .action-sheet-mask, .dialog-mask {
     max-width: 100%;
   }
@@ -483,7 +474,9 @@ input[type="range"]::-moz-range-thumb {
 /* ========== 登录/注册弹窗 ========== */
 .auth-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); }
 .auth-modal.hidden { display: none; }
-.auth-box { background: #fff; border-radius: 20px; padding: 32px 24px; width: 320px; max-width: 90vw; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+.auth-box { background: #fff; border-radius: 20px; padding: 32px 24px; width: 320px; max-width: 90vw; box-shadow: 0 8px 32px rgba(0,0,0,0.2); position: relative; }
+.auth-close-btn { position: absolute; top: 12px; right: 16px; font-size: 24px; color: #999; cursor: pointer; line-height: 1; transition: color 0.3s; }
+.auth-close-btn:hover { color: #333; }
 .auth-title { font-size: 20px; font-weight: 600; text-align: center; margin-bottom: 20px; color: #2c3840; }
 .auth-input { width: 100%; padding: 12px 14px; border: 1.5px solid #d9e2e8; border-radius: 10px; font-size: 14px; outline: none; transition: border-color 0.3s; margin-bottom: 12px; }
 .auth-input:focus { border-color: #689e84; }
@@ -491,6 +484,8 @@ input[type="range"]::-moz-range-thumb {
 .auth-btn-primary { background: #689e84; color: #fff; }
 .auth-btn-primary:hover { background: #5a8e74; }
 .auth-btn-secondary { background: transparent; color: #689e84; border: 1.5px solid #689e84; }
+.auth-btn-logout { background: #e74c3c; color: #fff; }
+.auth-btn-logout:hover { background: #c0392b; }
 .auth-switch { text-align: center; font-size: 13px; color: #666; margin-top: 8px; }
 .auth-switch a { color: #689e84; text-decoration: none; font-weight: 600; cursor: pointer; }
 .auth-error { color: #e74c3c; font-size: 13px; text-align: center; margin-bottom: 10px; min-height: 18px; }
@@ -573,13 +568,12 @@ input[type="range"]::-moz-range-thumb {
 </head>
 <body>
 
-<div class="phone-frame">
 <!-- 渐变动态背景 -->
 <div class="base-bg"></div>
 <!-- 播放实景背景 -->
 <div class="play-bg" id="playBg"></div>
-<!-- 毛玻璃遮罩 -->
-<div class="blur-overlay" id="blurOverlay"></div>
+
+<div class="phone-frame">
 
 <!-- ========== 首页 ========== -->
 <div class="page active" id="page-index">
@@ -880,6 +874,7 @@ input[type="range"]::-moz-range-thumb {
 <!-- ========== 登录/注册弹窗 ========== -->
 <div class="auth-modal hidden" id="authModal">
   <div class="auth-box">
+    <span class="auth-close-btn" onclick="closeAuthModal()">&times;</span>
     <div class="auth-title" id="authTitle">登录</div>
     <div class="auth-error" id="authError"></div>
     <div id="authFields">
@@ -889,6 +884,7 @@ input[type="range"]::-moz-range-thumb {
     </div>
     <button class="auth-btn auth-btn-primary" id="authSubmitBtn" onclick="onAuthSubmit()">登录</button>
     <button class="auth-btn auth-btn-secondary" id="authSwitchBtn" onclick="onAuthSwitch()">没有账号？去注册</button>
+    <button class="auth-btn auth-btn-logout" id="authLogoutBtn" onclick="onAuthLogout()" style="display:none;">退出登录</button>
   </div>
 </div>
 
@@ -904,6 +900,8 @@ input[type="range"]::-moz-range-thumb {
     </div>
   </div>
 </div>
+
+</div><!-- end phone-frame -->
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
@@ -925,27 +923,10 @@ input[type="range"]::-moz-range-thumb {
     </div>
   </div>
 </div>
-</div><!-- end phone-frame -->
 
 <script>
-// ========== 后端 API 配置 ==========
-var API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-  ? 'http://localhost:3000/api' : '/api';
-
-var currentUser = null; // { token, id, username, nickname, avatar }
-
-function apiFetch(path, options) {
-  var opts = options || {};
-  var headers = { 'Content-Type': 'application/json' };
-  if (currentUser && currentUser.token) {
-    headers['Authorization'] = 'Bearer ' + currentUser.token;
-  }
-  return fetch(API_BASE + path, {
-    method: opts.method || 'GET',
-    headers: headers,
-    body: opts.body ? JSON.stringify(opts.body) : undefined
-  }).then(function(r) { return r.json(); });
-}
+// ========== 本地存储配置 ==========
+var currentUser = null; // { id, username, nickname }
 
 function saveUser(user) {
   currentUser = user;
@@ -982,14 +963,8 @@ function updateUserBarUI() {
   }
 }
 
-function requireLogin(callback) {
-  if (currentUser && currentUser.token) { callback(); return; }
-  showAuthModal('login');
-  showToast('请先登录');
-}
-
 // ========== 登录/注册弹窗逻辑 ==========
-var authMode = 'login'; // 'login' | 'register'
+var authMode = 'login';
 
 function showAuthModal(mode) {
   authMode = mode || 'login';
@@ -999,6 +974,8 @@ function showAuthModal(mode) {
   document.getElementById('authSwitchBtn').textContent = authMode === 'login' ? '没有账号？去注册' : '已有账号？去登录';
   document.getElementById('authNickname').style.display = authMode === 'register' ? 'block' : 'none';
   document.getElementById('authError').textContent = '';
+  // 显示/隐藏退出按钮
+  document.getElementById('authLogoutBtn').style.display = currentUser ? 'block' : 'none';
 }
 
 function closeAuthModal() {
@@ -1009,6 +986,13 @@ function onAuthSwitch() {
   showAuthModal(authMode === 'login' ? 'register' : 'login');
 }
 
+function onAuthLogout() {
+  logoutUser();
+  closeAuthModal();
+  showToast('已退出登录');
+  loadMineData();
+}
+
 function onAuthSubmit() {
   var username = document.getElementById('authUsername').value.trim();
   var password = document.getElementById('authPassword').value;
@@ -1016,36 +1000,33 @@ function onAuthSubmit() {
   var errEl = document.getElementById('authError');
 
   if (!username || !password) { errEl.textContent = '请输入用户名和密码'; return; }
+  if (password.length < 6) { errEl.textContent = '密码至少6位'; return; }
 
-  var path = authMode === 'login' ? '/auth/login' : '/auth/register';
-  var body = { username: username, password: password };
-  if (authMode === 'register' && nickname) body.nickname = nickname;
+  // 本地模拟：用 localStorage 存储用户
+  var users = {};
+  try { users = JSON.parse(localStorage.getItem('users') || '{}'); } catch(e) {}
 
-  var btn = document.getElementById('authSubmitBtn');
-  btn.disabled = true;
-  btn.textContent = '请稍候...';
-
-  apiFetch(path, { method: 'POST', body: body })
-    .then(function(res) {
-      btn.disabled = false;
-      btn.textContent = authMode === 'login' ? '登录' : '注册';
-      if (res.code === 0) {
-        saveUser(res.data);
-        closeAuthModal();
-        showToast(authMode === 'login' ? '登录成功' : '注册成功');
-        document.getElementById('authUsername').value = '';
-        document.getElementById('authPassword').value = '';
-        document.getElementById('authNickname').value = '';
-        loadMineData();
-      } else {
-        errEl.textContent = res.message || '操作失败';
-      }
-    })
-    .catch(function(err) {
-      btn.disabled = false;
-      btn.textContent = authMode === 'login' ? '登录' : '注册';
-      errEl.textContent = '网络错误，请检查后端服务';
-    });
+  if (authMode === 'register') {
+    if (users[username]) { errEl.textContent = '用户名已存在'; return; }
+    users[username] = { id: Date.now(), username: username, nickname: nickname || username, password: password };
+    try { localStorage.setItem('users', JSON.stringify(users)); } catch(e) {}
+    saveUser(users[username]);
+    closeAuthModal();
+    showToast('注册成功');
+    document.getElementById('authUsername').value = '';
+    document.getElementById('authPassword').value = '';
+    document.getElementById('authNickname').value = '';
+    loadMineData();
+  } else {
+    if (!users[username]) { errEl.textContent = '用户不存在'; return; }
+    if (users[username].password !== password) { errEl.textContent = '密码错误'; return; }
+    saveUser(users[username]);
+    closeAuthModal();
+    showToast('登录成功');
+    document.getElementById('authUsername').value = '';
+    document.getElementById('authPassword').value = '';
+    loadMineData();
+  }
 }
 
 function onUserBarTap() {
@@ -1058,23 +1039,31 @@ function onUserBarTap() {
   }
 }
 
-// ========== 收藏功能（后端API）==========
+// ========== 收藏功能（本地存储）==========
+function getFavorites() {
+  var favs = [];
+  try { favs = JSON.parse(localStorage.getItem('favorites') || '[]'); } catch(e) {}
+  return favs;
+}
+
+function saveFavorites(favs) {
+  try { localStorage.setItem('favorites', JSON.stringify(favs)); } catch(e) {}
+}
+
 function fetchFavorites() {
-  if (!currentUser) { document.getElementById('favModalBody').innerHTML = '<div class="modal-empty">请先登录后查看收藏</div>'; return; }
-  apiFetch('/favorites').then(function(res) {
-    var html = '';
-    if (res.code === 0 && res.data && res.data.length > 0) {
-      res.data.forEach(function(fav) {
-        html += '<div class="fav-item">' +
-          (fav.cover_url ? '<img class="fav-item-cover" src="' + fav.cover_url + '">' : '') +
-          '<div class="fav-item-info"><div class="fav-item-name">' + fav.sound_name + '</div></div>' +
-          '<button class="fav-item-btn" onclick="removeFavorite(\'' + fav.id + '\')">取消收藏</button></div>';
-      });
-    } else {
-      html = '<div class="modal-empty">暂无收藏</div>';
-    }
-    document.getElementById('favModalBody').innerHTML = html;
-  });
+  var favs = getFavorites();
+  var html = '';
+  if (favs.length > 0) {
+    favs.forEach(function(fav, idx) {
+      html += '<div class="fav-item">' +
+        (fav.coverUrl ? '<img class="fav-item-cover" src="' + fav.coverUrl + '">' : '') +
+        '<div class="fav-item-info"><div class="fav-item-name">' + fav.soundName + '</div></div>' +
+        '<button class="fav-item-btn" onclick="removeFavorite(' + idx + ')">取消收藏</button></div>';
+    });
+  } else {
+    html = '<div class="modal-empty">暂无收藏</div>';
+  }
+  document.getElementById('favModalBody').innerHTML = html;
 }
 
 function onFavoritesTap() {
@@ -1085,35 +1074,36 @@ function onFavoritesTap() {
 function closeFavModal() { document.getElementById('favModal').classList.add('hidden'); }
 
 function addFavorite(soundId, soundName, soundUrl, coverUrl) {
-  if (!currentUser) { showAuthModal('login'); showToast('请先登录'); return; }
-  apiFetch('/favorites', {
-    method: 'POST',
-    body: { sound_id: soundId, sound_name: soundName, sound_url: soundUrl, cover_url: coverUrl }
-  }).then(function(res) {
-    if (res.code === 0) { showToast('已收藏'); }
-    else if (res.message && res.message.indexOf('已存在') >= 0) { showToast('已经收藏过了'); }
-    else { showToast(res.message || '操作失败'); }
-    checkFavoriteStatus();
-  });
+  var favs = getFavorites();
+  for (var i = 0; i < favs.length; i++) {
+    if (favs[i].soundId === soundId) { showToast('已经收藏过了'); return; }
+  }
+  favs.push({ soundId: soundId, soundName: soundName, soundUrl: soundUrl, coverUrl: coverUrl });
+  saveFavorites(favs);
+  showToast('已收藏');
+  checkFavoriteStatus();
 }
 
-function removeFavorite(favId) {
-  apiFetch('/favorites/' + favId, { method: 'DELETE' })
-    .then(function(res) {
-      if (res.code === 0) { showToast('已取消收藏'); fetchFavorites(); checkFavoriteStatus(); }
-    });
+function removeFavorite(idx) {
+  var favs = getFavorites();
+  favs.splice(idx, 1);
+  saveFavorites(favs);
+  showToast('已取消收藏');
+  fetchFavorites();
+  checkFavoriteStatus();
 }
 
-function checkFavoriteStatusAPI() {
-  if (!currentUser || !currentSceneId) {
+function checkFavoriteStatus() {
+  if (!currentSceneId) {
     document.getElementById('funcFavorite').classList.remove('active');
     return;
   }
-  apiFetch('/favorites/check/' + currentSceneId).then(function(res) {
-    if (res.code === 0) {
-      document.getElementById('funcFavorite').classList.toggle('active', !!res.data.is_favorited);
-    }
-  });
+  var favs = getFavorites();
+  var found = false;
+  for (var i = 0; i < favs.length; i++) {
+    if (favs[i].soundId === currentSceneId) { found = true; break; }
+  }
+  document.getElementById('funcFavorite').classList.toggle('active', found);
 }
 
 function onShareTap() {
@@ -1485,7 +1475,6 @@ function initIndex() {
       if (ls.bgUrl) {
         document.getElementById('playBg').style.backgroundImage = 'url(' + ls.bgUrl + ')';
         document.getElementById('playBg').classList.add('active');
-        document.getElementById('blurOverlay').classList.add('active');
       }
     }
   } catch(e) {}
@@ -1544,14 +1533,11 @@ function updateIndexUI() {
   // 背景
   var bgUrl = audioMgr.currentScene ? (audioMgr.currentScene.bgUrl || '') : '';
   var playBg = document.getElementById('playBg');
-  var blurOv = document.getElementById('blurOverlay');
   if (bgUrl) {
     playBg.style.backgroundImage = 'url(' + bgUrl + ')';
     playBg.classList.add('active');
-    blurOv.classList.add('active');
   } else {
     playBg.classList.remove('active');
-    blurOv.classList.remove('active');
   }
 
   // 收藏状态
@@ -1613,43 +1599,21 @@ function onRandomSoundTap() {
 
 function onFavoriteMixTap() {
   if (!currentSceneId) { showToast('请先选择声音'); return; }
-  if (!currentUser) { showAuthModal('login'); showToast('请先登录'); return; }
-
-  // 判断是否已收藏：如果已收藏就取消，否则添加
   var scene = audioMgr.currentScene;
   var soundId = currentSceneId;
   var soundName = scene ? scene.name : '';
   var soundUrl = scene && scene.mainAudio ? scene.mainAudio : '';
   var coverUrl = scene ? (scene.coverUrl || scene.bgUrl || '') : '';
 
-  // 先检查状态
-  apiFetch('/favorites/check/' + soundId).then(function(res) {
-    if (res.code === 0 && res.data.is_favorited) {
-      // 已收藏，需要找到ID再删除
-      apiFetch('/favorites').then(function(favRes) {
-        if (favRes.code === 0 && favRes.data) {
-          for (var i = 0; i < favRes.data.length; i++) {
-            if (favRes.data[i].sound_id === soundId) {
-              removeFavorite(favRes.data[i].id);
-              return;
-            }
-          }
-        }
-        showToast('已取消收藏');
-        checkFavoriteStatus();
-      });
-    } else {
-      addFavorite(soundId, soundName, soundUrl, coverUrl);
+  // 检查是否已收藏
+  var favs = getFavorites();
+  for (var i = 0; i < favs.length; i++) {
+    if (favs[i].soundId === soundId) {
+      removeFavorite(i);
+      return;
     }
-  });
-}
-
-function checkFavoriteStatus() {
-  if (!currentUser) {
-    document.getElementById('funcFavorite').classList.remove('active');
-    return;
   }
-  checkFavoriteStatusAPI();
+  addFavorite(soundId, soundName, soundUrl, coverUrl);
 }
 
 function onFadeOutTap() {
@@ -1963,17 +1927,7 @@ function saveFocusRecord(minutes) {
   records[today].minutes += minutes;
   if (focusState.mode === 'pomodoro') records[today].rounds += 1;
   try { localStorage.setItem('focusRecords', JSON.stringify(records)); } catch(e) {}
-  saveFocusRecordToServer(minutes);
   loadFocusStats();
-}
-
-function saveFocusRecordToServer(minutes) {
-  if (!currentUser) return;
-  var today = getToday();
-  apiFetch('/focus/records', {
-    method: 'POST',
-    body: { date: today, minutes: minutes, rounds: 1, mode: focusState.mode }
-  }).catch(function() { /* silent */ });
 }
 
 function loadFocusStats() {
@@ -1999,32 +1953,16 @@ function loadMineData() {
   if (savedMixes.length > 0) { badge.style.display = ''; badge.textContent = savedMixes.length; }
   else { badge.style.display = 'none'; }
 
-  // 专注记录尝试从后端获取，失败则用本地
-  if (currentUser) {
-    apiFetch('/focus/today').then(function(res) {
-      if (res.code === 0 && res.data) {
-        document.getElementById('mineTodayMin').textContent = res.data.minutes || 0;
-        document.getElementById('mineTodayRounds').textContent = res.data.rounds || 0;
-      }
-    }).catch(function() { /* fallback to local */ });
-
-    apiFetch('/focus/summary?period=all').then(function(res) {
-      if (res.code === 0 && res.data) {
-        document.getElementById('totalFocusText').textContent = '累计专注 ' + (res.data.total_minutes || 0) + ' 分钟';
-      }
-    }).catch(function() { /* fallback to local */ });
-  } else {
-    // 未登录用本地数据
-    var records = {};
-    try { records = JSON.parse(localStorage.getItem('focusRecords') || '{}'); } catch(e) {}
-    var today = getToday();
-    var todayData = records[today] || { minutes: 0, rounds: 0 };
-    var totalMinutes = 0;
-    Object.keys(records).forEach(function(date) { totalMinutes += records[date].minutes; });
-    document.getElementById('mineTodayMin').textContent = todayData.minutes;
-    document.getElementById('mineTodayRounds').textContent = todayData.rounds;
-    document.getElementById('totalFocusText').textContent = '累计专注 ' + totalMinutes + ' 分钟';
-  }
+  // 专注记录从本地获取
+  var records = {};
+  try { records = JSON.parse(localStorage.getItem('focusRecords') || '{}'); } catch(e) {}
+  var today = getToday();
+  var todayData = records[today] || { minutes: 0, rounds: 0 };
+  var totalMinutes = 0;
+  Object.keys(records).forEach(function(date) { totalMinutes += records[date].minutes; });
+  document.getElementById('mineTodayMin').textContent = todayData.minutes;
+  document.getElementById('mineTodayRounds').textContent = todayData.rounds;
+  document.getElementById('totalFocusText').textContent = '累计专注 ' + totalMinutes + ' 分钟';
 }
 
 function onMyMixesTap() {
